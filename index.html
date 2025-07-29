@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Market Masti: From Barter to Money</title>
+  <style>
+    body {
+      font-family: "Comic Sans MS", cursive, sans-serif;
+      background: #ffe8d6;
+      color: #411f00;
+      margin: 0;
+      padding: 0;
+    }
+    h1 {
+      text-align: center;
+      color: #b06e24;
+      margin-top: 18px;
+      font-size: 2.3em;
+      text-shadow: 1px 1px 2px #fff;
+    }
+    #game-container {
+      width: 88%;
+      max-width: 700px;
+      margin: auto;
+      margin-top: 12px;
+      background: #fffbe4;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px #d3ba8d44;
+      padding: 25px 14px 40px 14px;
+      min-height: 670px;
+    }
+    #story, #funfact, #stats {
+      margin-top: 16px;
+      margin-bottom: 18px;
+      font-size: 1.13em;
+      min-height: 32px;
+      line-height: 1.7;
+    }
+    #inventory, #marketplace {
+      background: #fff3e6;
+      margin: 18px auto;
+      border-radius: 12px;
+      padding: 12px 9px;
+      min-height: 60px;
+      box-shadow: 0 2px 7px #bca97a19;
+    }
+    .item {
+      display: inline-block;
+      margin: 9px 9px 9px 0;
+      padding: 10px 10px 7px 10px;
+      border: 2px solid #b8916a;
+      border-radius: 9px;
+      background: #fff;
+      cursor: pointer;
+      min-width: 68px;
+      text-align: center;
+      font-size: 1.04em;
+      transition: transform 0.20s;
+      animation: popitem 0.4s;
+    }
+    .item:hover { background: #fff9dc; transform: scale(1.07); }
+    @keyframes popitem {
+      0% { transform: scale(0.6); background: #ffefa1; }
+      80% { transform: scale(1.10); }
+      100% { transform: scale(1); background: #fff; }
+    }
+    button {
+      margin: 15px 8px 0 0;
+      background-color: #faad14;
+      color: #fff;
+      font-weight: bold;
+      border-radius: 8px;
+      border: none;
+      padding: 11px 24px;
+      font-size: 1.15em;
+      cursor: pointer;
+      box-shadow: 0 2px 7px #bca97a21;
+      transition: background 0.1s;
+    }
+    button:hover { background: #ffc33b; }
+    .character {
+      display: inline-block;
+      vertical-align: middle;
+      margin: 10px 18px 6px 5px;
+      animation: bounce 1.5s infinite alternate;
+      transition: filter 0.2s;
+    }
+    .character .body { 
+      width: 64px; height: 77px; border-radius: 30px 30px 40px 40px / 38px 41px 27px 40px; background: #fab577;
+      position: relative; margin:auto; border: 2px solid #dfa078;
+      box-shadow: 0 6px 16px #c38c5944;
+    }
+    .character .head { width: 45px; height: 45px; border-radius: 100%;
+      background: #ffe1b3; left: 8px; top: -36px; position: absolute;
+      border: 2px solid #fff8dc; }
+    .character .face { position: absolute; left: 17px; top: -26px; }
+    .character .eye { width: 7px; height: 7px; border-radius: 50%; background: #391c13;
+      display: inline-block; margin: 1px 6px; }
+    .character .mouth { width: 16px; height:7px; border-radius: 0 0 9px 9px/0 0 10px 10px;
+      background: #de7f14; margin-left: 6px; margin-top: -2px;}
+    .char-1 .body { background: #fab577; border-color: #dfa078;}
+    .char-2 .body { background: #7ccde9;border-color: #5aabc6;}
+    .char-3 .body { background: #ffe78c; border-color:#ccb367;}
+    .char-4 .body { background: #a3e49b; border-color: #56ad4b;}
+    @keyframes bounce {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-14px); }
+    }
+    #funfact {
+      background: #fafb8c;
+      border: 2.2px dashed #ffbe1f;
+      color: #c87300;
+      font-size: 1.011em;
+      border-radius: 9px;
+      box-shadow: 0 2px 10px #fff9a23b;
+      padding: 9px 13px;
+      margin: 18px 0 12px 0;
+      min-height:40px;
+      text-align: center;
+      animation: popitem 0.7s;
+      font-style: italic;
+      display:none;
+    }
+    @media (max-width:600px) {
+      #game-container { width: 98%; min-height: 540px;}
+      .character .body { width:44px;height:55px;}
+      .character .head { width:30px;height:30px;}
+    }
+  </style>
+</head>
+<body>
+  <h1>Market Masti: From Barter to Money</h1>
+  <div id="game-container">
+    <div id="stats"></div>
+    <div id="story"></div>
+    <div id="characters"></div>
+    <div id="inventory"></div>
+    <div id="marketplace"></div>
+    <button id="toMoney" style="display:none;">Switch to Money System (Coins)</button>
+    <button id="toNotes" style="display:none;">Switch to Currency Notes Level</button>
+    <div id="funfact"></div>
+  </div>
+  <script>
+    // Game characters
+    const charDefs = [
+      {name:"Anaya", color:"char-1", label:"You"},
+      {name:"Hari", color:"char-2", label:"Guava Seller"},
+      {name:"Meena", color:"char-3", label:"Potter"},
+      {name:"Sarla", color:"char-4", label:"Bangle Seller"}
+    ];
+    // Game data (initial)
+    const items = ['Rotis', 'Mangoes', 'Clay Pot', 'Bangles', 'Toys', 'Sweets', 'Big Drum', 'Festival Tent'];
+    let persons = [
+      {name: 'Hari', wants: 'Clay Pot', has: 'Mangoes', char:1},
+      {name: 'Meena', wants: 'Rotis', has: 'Clay Pot', char:2},
+      {name: 'Sarla', wants: 'Bangles', has: 'Toys', char:3}
+    ];
+    let festivalGoods = [
+      {name: 'Drum Shop', wants: 'Notes', has: 'Big Drum', char:2, big:true},
+      {name: 'Tent Decorator', wants: 'Notes', has: 'Festival Tent', char:3, big:true}
+    ];
+    let playerInv = ['Rotis'];
+    let stage = 'barter'; // barter->money->notes
+    let playerEnergy = 100;
+    let playerTime = 0; // max 60
+    let hasBigItem = false;
+    const funFacts = [
+      "Did you know: Ancient Indians sometimes bartered sea shells!",
+      "Fun Fact: Some villages used salt or beads to trade before money was invented.",
+      "Barter is tough: imagine carrying a goat for a sack of rice!",
+      "The word 'Rupee' comes from the Sanskrit 'Rupya', meaning silver.",
+      "First coins in India were used more than 2,500 years ago!",
+      "In some places, tea bricks and grains were traded as money.",
+      "Coins and notes make festival shopping fun and easy!",
+      "Did you know farmers in Tamil Nadu once used paddy seeds as money?",
+      "Some African villages traded in cowrie shells, like money!"
+    ];
+    // DOM
+    const story = document.getElementById('story');
+    const inventoryDiv = document.getElementById('inventory');
+    const marketplaceDiv = document.getElementById('marketplace');
+    const toMoneyBtn = document.getElementById('toMoney');
+    const toNotesBtn = document.getElementById('toNotes');
+    const funfactDiv = document.getElementById('funfact');
+    const statsDiv = document.getElementById('stats');
+    const charactersDiv = document.getElementById('characters');
+
+    function renderCharacters() {
+      let html = '';
+      // Always show player (Anaya) and 3 market folks
+      for (let i=0; i<4; ++i) {
+        html += `<div class="character ${charDefs[i].color}" style="margin-right:18px;" title="${charDefs[i].name}: ${charDefs[i].label}">
+          <div class="body"></div>
+          <div class="head">
+            <div class="face">
+              <span class="eye"></span><span class="eye"></span>
+              <div class="mouth"></div>
+            </div>
+          </div>
+          <div style="text-align:center;font-size:0.78em;margin-top:45px;color:#80561a">${charDefs[i].name}</div>
+        </div>`;
+      }
+      charactersDiv.innerHTML = html;
+    }
+    function renderStory(msg) { story.innerHTML = `<p>${msg}</p>`; }
+    function renderStats() {
+      statsDiv.innerHTML = `<b>Energy:</b> ${playerEnergy} &nbsp; <b>Time:</b> ${playerTime} min`;
+    }
+    function renderInventory() {
+      let txt = "<b>Your Backpack:</b> ";
+      txt += playerInv.map((item, i) => 
+        `<span class="item" onclick="selectItem(${i})" title="Click to select">${item}</span>`).join('');
+      inventoryDiv.innerHTML = txt;
+    }
+    function renderMarketplace() {
+      let data = (stage === 'notes') ? festivalGoods : persons;
+      let txt = "<b>Market Stalls:</b><br>";
+      data.forEach((obj, idx) => {
+        txt += `<span class='item' onclick='trade(${idx})' title="Click to trade with ${obj.name}">
+                  <b>${obj.name}</b><br>
+                  Has: <u>${obj.has}</u><br>
+                  Wants: <i>${obj.wants}</i>
+                </span>`;
+      });
+      marketplaceDiv.innerHTML = txt;
+    }
+    window.selectItem = function(i) {
+       alert(`You are carrying "${playerInv[i]}" to trade!`);
+    }
+    window.trade = function(idx) {
+      let data = (stage==='notes') ? festivalGoods : persons;
+      const person = data[idx];
+      funfactDiv.style.display="none";
+      let energyLoss, timeLoss;
+      if(stage==='barter'){
+        energyLoss = 9; timeLoss = 9;
+        playerEnergy -= energyLoss; playerTime += timeLoss;
+        if(playerInv.includes(person.wants)) {
+          playerInv = playerInv.filter(x=>x!==person.wants);
+          playerInv.push(person.has);
+          renderStory(`You traded your ${person.wants} with ${person.name}. Got: ${person.has}.`);
+          showFunFact();
+        }
+        else {
+          renderStory(`No match! ${person.name} doesn't want your goods—keep searching!`);
+        }
+        renderInventory(); renderStats(); checkBarterIssues();
+      }
+      else if(stage==='money'){
+        energyLoss = 2; timeLoss = 3;
+        playerEnergy -= energyLoss; playerTime += timeLoss;
+        if(playerInv.includes('Coins')) {
+          if(['Big Drum','Festival Tent'].includes(person.has)){
+            renderStory(`This item is too big! You need currency notes to buy the ${person.has}.`);
+          } else {
+            playerInv.push(person.has);
+            renderStory(`You paid coins to ${person.name} and got ${person.has} easily!`);
+            showFunFact();
+          }
+        } else { renderStory("You need coins to buy!"); }
+        renderInventory(); renderStats();
+      }
+      else if(stage==='notes'){
+        energyLoss = 1; timeLoss = 2;
+        playerEnergy -= energyLoss; playerTime += timeLoss;
+        if(playerInv.includes('Notes')) {
+          if(person.big){
+            playerInv.push(person.has);
+            hasBigItem=true;
+            renderStory(`You bought the ${person.has} for the festival with currency notes!`);
+            showFunFact();
+          } else {
+            renderStory('This is a small item. Use coins for small purchases!');
+          }
+        } else { renderStory('You need currency notes to buy this!'); }
+        renderInventory(); renderStats();
+      }
+    }
+    function showFunFact() {
+      const i = Math.floor(Math.random()*funFacts.length);
+      funfactDiv.innerHTML = funFacts[i];
+      funfactDiv.style.display="block";
+      setTimeout(()=>{funfactDiv.style.display="none";}, 5200);
+    }
+    function checkBarterIssues() {
+      if (playerEnergy <= 40 && stage === 'barter') {
+        toMoneyBtn.style.display = 'inline-block';
+        renderStory('Dadaji Lalit: "Barter is so tiring and takes so long! Shall I show you an easier way?"');
+      }
+      if (playerTime >= 60) {
+        renderStory('<b>You ran out of time today... Try being faster next round!</b>');
+      }
+    }
+    toMoneyBtn.onclick = function() {
+      stage = 'money';
+      playerInv = ['Coins'];
+      playerEnergy = 85; playerTime += 5;
+      renderStory('Dadaji Lalit: "Now try trading with coins—see how quick and light it feels!"');
+      renderInventory(); renderStats(); renderMarketplace();
+      toMoneyBtn.style.display = 'none'; toNotesBtn.style.display = 'inline-block';
+    };
+    toNotesBtn.onclick = function() {
+      stage = 'notes';
+      playerInv = ['Notes'];
+      playerEnergy = 90; playerTime += 2;
+      renderStory('Dadaji Lalit: "To buy big festival things, use currency notes! Paper money makes even large trades easy!"');
+      renderInventory(); renderStats(); renderMarketplace();
+      toNotesBtn.style.display = 'none';
+    };
+
+    // --- Initial render ---
+    function startGame() {
+      renderCharacters();
+      renderStory("You are Anaya in Suryapur. You want mangoes, but only have rotis to barter. Try trading with others in the bustling market!");
+      renderInventory();
+      renderMarketplace();
+      renderStats();
+      funfactDiv.style.display="none";
+      toMoneyBtn.style.display="none"; toNotesBtn.style.display="none";
+      playerEnergy=100; playerTime=0; hasBigItem=false; stage='barter'; playerInv=['Rotis'];
+    }
+    startGame();
+    // Reset if needed (for your dev/testing): uncomment below line
+    // window.resetMarketMasti = startGame;
+  </script>
+</body>
+</html>
